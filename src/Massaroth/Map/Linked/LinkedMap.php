@@ -258,6 +258,5 @@ class LinkedMap extends Map
         $this->current = $initialCurrent;
         return $foundItem;
     }
-
-
+    
 }
