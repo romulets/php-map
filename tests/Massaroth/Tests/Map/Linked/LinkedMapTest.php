@@ -103,8 +103,8 @@ class LinkedMapTest extends TestCase
     {
         $this->map->put(1, $this->someObject1);
 
-        $this->assertEquals(true, $this->map->containsValue($this->someObject1));
-        $this->assertEquals(false, $this->map->containsValue($this->someObject2));
+        $this->assertTrue($this->map->containsValue($this->someObject1));
+        $this->assertFalse($this->map->containsValue($this->someObject2));
     }
 
     public function testOverwrite()
@@ -147,15 +147,15 @@ class LinkedMapTest extends TestCase
         $this->map->remove(1);
         $this->map->remove(3);
 
-        $this->assertEquals(null, $this->map->get(1));
+        $this->assertNull($this->map->get(1));
         $this->assertEquals("b", $this->map->get(2));
-        $this->assertEquals(null, $this->map->get(3));
+        $this->assertNull($this->map->get(3));
         $this->assertEquals("d", $this->map->get(4));
     }
 
     public function testFirstItem()
     {
-        $this->assertEquals(null, $this->map->first());
+        $this->assertNull($this->map->first());
 
         $this->map->put(1, 2);
         $this->map->put(2, 3);
@@ -165,12 +165,12 @@ class LinkedMapTest extends TestCase
         $this->assertEquals(3, $this->map->first());
 
         $this->map->remove(2);
-        $this->assertEquals(null, $this->map->first());
+        $this->assertNull($this->map->first());
     }
 
     public function testLastItem()
     {
-        $this->assertEquals(null, $this->map->last());
+        $this->assertNull($this->map->last());
 
         $this->map->put(1, 2);
         $this->map->put(2, 3);
@@ -180,18 +180,18 @@ class LinkedMapTest extends TestCase
         $this->assertEquals(2, $this->map->last());
 
         $this->map->remove(1);
-        $this->assertEquals(null, $this->map->last());
+        $this->assertNull($this->map->last());
     }
 
     public function testEmpty()
     {
-        $this->assertEquals(true, $this->map->isEmpty());
+        $this->assertTrue($this->map->isEmpty());
 
         $this->map->put(1, 1);
-        $this->assertEquals(false, $this->map->isEmpty());
+        $this->assertFalse($this->map->isEmpty());
 
         $this->map->remove(1);
-        $this->assertEquals(true, $this->map->isEmpty());
+        $this->assertTrue($this->map->isEmpty());
     }
 
     public function testKeys()
