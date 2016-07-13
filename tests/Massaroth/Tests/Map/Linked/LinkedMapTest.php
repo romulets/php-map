@@ -17,263 +17,200 @@ class LinkedMapTest extends TestCase
 {
 
     /**
-     * Verify if it works with scalar values
+     * @var LinkedMap
      */
+    private $map;
+
+    /**
+     * @var \stdClass
+     */
+    private $someObject1;
+
+    /**
+     * @var \stdClass
+     */
+    private $someObject2;
+
+    protected function setUp()
+    {
+        $this->map = new LinkedMap();
+
+        $this->someObject1 = new \stdClass();
+        $this->someObject1->a = true;
+
+        $this->someObject2 = new \stdClass();
+        $this->someObject2->b = false;
+
+        parent::setUp();
+    }
+
     public function testPutScalarWithSuccess()
     {
-        $hashMap = new LinkedMap();
-        $hashMap->put(1, 2);
-        $hashMap->put("a", "b");
-        $hashMap->put(["023"], ["abc"]);
+        $this->map->put(1, 2);
+        $this->map->put("a", "b");
+        $this->map->put(["023"], ["abc"]);
 
-        $this->assertEquals(2, $hashMap->get(1));
-        $this->assertEquals("b", $hashMap->get("a"));
-        $this->assertEquals(["abc"], $hashMap->get(["023"]));
+        $this->assertEquals(2, $this->map->get(1));
+        $this->assertEquals("b", $this->map->get("a"));
+        $this->assertEquals(["abc"], $this->map->get(["023"]));
     }
 
-    /**
-     * Verify if it works with scalar values
-     */
     public function testPutObjectWithSuccess()
     {
-        $hashMap = new LinkedMap();
-        $obj1 = new \stdClass();
-        $obj1->a = true;
+        $this->map->put($this->someObject1, 1);
+        $this->map->put(2, $this->someObject2);
 
-        $obj2 = new \stdClass();
-        $obj1->b = true;
-
-
-        $hashMap->put($obj1, 1);
-        $hashMap->put(2, $obj2);
-
-        $this->assertEquals(1, $hashMap->get($obj1));
-        $this->assertEquals($obj2, $hashMap->get(2));
+        $this->assertEquals(1, $this->map->get($this->someObject1));
+        $this->assertEquals($this->someObject2, $this->map->get(2));
     }
 
-    /**
-     * Assert if can't put an empty key
-     */
     public function testNullKey()
     {
         $this->expectException(EmptyKeyException::class);
-
-        $hashMap = new LinkedMap();
-        $hashMap->put(null, 1);
+        $this->map->put(null, 1);
     }
 
-    /**
-     * Assert if can't put an empty key
-     */
     public function testFalseKey()
     {
         $this->expectException(EmptyKeyException::class);
-
-        $hashMap = new LinkedMap();
-        $hashMap->put(false, 1);
+        $this->map->put(false, 1);
     }
 
-    /**
-     * Test if the foreach works fine
-     */
     public function testForeach()
     {
-        $hashMap = new LinkedMap();
-
         $values = [
             ["a", "b"],
             [1, 2],
-            [new \stdClass(), 'd'],
+            [$this->someObject1, 'd'],
             [[123], ['abc']],
-            [031, new \stdClass()],
+            [031, $this->someObject2],
             ["habalaba", [true]],
         ];
 
         foreach ($values as $value) {
-            $hashMap->put($value[0], $value[1]);
+            $this->map->put($value[0], $value[1]);
         }
 
         $cont = 0;
-        foreach ($hashMap as $key => $value) {
+        foreach ($this->map as $key => $value) {
             $asserts = $values[$cont++];
             $this->assertEquals($asserts[0], $key);
             $this->assertEquals($asserts[1], $value);
         }
     }
 
-    /**
-     * Test if can a value be found without key
-     */
     public function testFindKeyByValue()
     {
-        $hashMap = new LinkedMap();
+        $this->map->put(1, $this->someObject1);
 
-        $std1 = new \stdClass();
-        $std1->a = true;
-
-        $std2 = new \stdClass();
-        $std2->b = false;
-
-        $hashMap->put(1, $std1);
-
-        $this->assertEquals(true, $hashMap->containsValue($std1));
-        $this->assertEquals(false, $hashMap->containsValue($std2));
+        $this->assertEquals(true, $this->map->containsValue($this->someObject1));
+        $this->assertEquals(false, $this->map->containsValue($this->someObject2));
     }
 
-    /**
-     * Test if a value will overwritten
-     */
     public function testOverwrite()
     {
-        $hashMap = new LinkedMap();
+        $this->map->put($this->someObject1, 1);
+        $this->assertEquals(1, $this->map->get($this->someObject1));
 
-        $std = new \stdClass();
-        $std->a = true;
+        $this->someObject1->b = false;
 
-        $hashMap->put($std, 1);
-        $this->assertEquals(1, $hashMap->get($std));
-
-        $std->b = false;
-
-        $hashMap->put($std, 2);
-        $this->assertEquals(2, $hashMap->get($std));
-        $this->assertEquals(1, $hashMap->size());
+        $this->map->put($this->someObject1, 2);
+        $this->assertEquals(2, $this->map->get($this->someObject1));
+        $this->assertEquals(1, $this->map->size());
     }
 
-    /**
-     * Test if size method works fine
-     */
     public function testSize()
     {
-        $hashMap = new LinkedMap();
+        $this->assertEquals(0, $this->map->size());
 
-        $this->assertEquals(0, $hashMap->size());
+        $this->map->put(1, 1);
+        $this->map->put(2, 1);
+        $this->map->put(3, 1);
+        $this->map->put(4, 1);
+        $this->assertEquals(4, $this->map->size());
 
-        $hashMap->put(1, 1);
-        $hashMap->put(2, 1);
-        $hashMap->put(3, 1);
-        $hashMap->put(4, 1);
+        $this->map->remove(1);
+        $this->map->remove(3);
+        $this->assertEquals(2, $this->map->size());
 
-        $this->assertEquals(4, $hashMap->size());
-
-        $hashMap->remove(1);
-        $hashMap->remove(3);
-
-        $this->assertEquals(2, $hashMap->size());
-
-        $hashMap->clear();
-
-        $this->assertEquals(0, $hashMap->size());
+        $this->map->clear();
+        $this->assertEquals(0, $this->map->size());
     }
 
-    /**
-     * test if the method remove is right
-     */
     public function testRemove()
     {
-        $hashMap = new LinkedMap();
+        $this->map->put(1, "a");
+        $this->map->put(2, "b");
+        $this->map->put(3, "c");
+        $this->map->put(4, "d");
 
-        $hashMap->put(1, "a");
-        $hashMap->put(2, "b");
-        $hashMap->put(3, "c");
-        $hashMap->put(4, "d");
+        $this->map->remove(1);
+        $this->map->remove(3);
 
-        $hashMap->remove(1);
-        $hashMap->remove(3);
-
-        $this->assertEquals(null, $hashMap->get(1));
-        $this->assertEquals("b", $hashMap->get(2));
-        $this->assertEquals(null, $hashMap->get(3));
-        $this->assertEquals("d", $hashMap->get(4));
+        $this->assertEquals(null, $this->map->get(1));
+        $this->assertEquals("b", $this->map->get(2));
+        $this->assertEquals(null, $this->map->get(3));
+        $this->assertEquals("d", $this->map->get(4));
     }
 
-    /**
-     * Test if the first item has a correct behavior
-     */
     public function testFirstItem()
     {
-        $hashMap = new LinkedMap();
+        $this->assertEquals(null, $this->map->first());
 
-        $this->assertEquals(null, $hashMap->first());
+        $this->map->put(1, 2);
+        $this->map->put(2, 3);
+        $this->assertEquals(2, $this->map->first());
 
-        $hashMap->put(1, 2);
-        $hashMap->put(2, 3);
+        $this->map->remove(1);
+        $this->assertEquals(3, $this->map->first());
 
-        $this->assertEquals(2, $hashMap->first());
-
-        $hashMap->remove(1);
-
-        $this->assertEquals(3, $hashMap->first());
-
-        $hashMap->remove(2);
-
-        $this->assertEquals(null, $hashMap->first());
+        $this->map->remove(2);
+        $this->assertEquals(null, $this->map->first());
     }
 
-    /**
-     * Test if the last item has a correct behavior
-     */
     public function testLastItem()
     {
-        $hashMap = new LinkedMap();
+        $this->assertEquals(null, $this->map->last());
 
-        $this->assertEquals(null, $hashMap->last());
+        $this->map->put(1, 2);
+        $this->map->put(2, 3);
+        $this->assertEquals(3, $this->map->last());
 
-        $hashMap->put(1, 2);
-        $hashMap->put(2, 3);
+        $this->map->remove(2);
+        $this->assertEquals(2, $this->map->last());
 
-        $this->assertEquals(3, $hashMap->last());
-
-        $hashMap->remove(2);
-
-        $this->assertEquals(2, $hashMap->last());
-
-        $hashMap->remove(1);
-
-        $this->assertEquals(null, $hashMap->last());
+        $this->map->remove(1);
+        $this->assertEquals(null, $this->map->last());
     }
 
-    /**
-     * Test if the empty method works fine
-     */
     public function testEmpty()
     {
-        $hashMap = new LinkedMap();
+        $this->assertEquals(true, $this->map->isEmpty());
 
-        $this->assertEquals(true, $hashMap->isEmpty());
+        $this->map->put(1, 1);
+        $this->assertEquals(false, $this->map->isEmpty());
 
-        $hashMap->put(1, 1);
-
-        $this->assertEquals(false, $hashMap->isEmpty());
-
-        $hashMap->remove(1);
-
-        $this->assertEquals(true, $hashMap->isEmpty());
+        $this->map->remove(1);
+        $this->assertEquals(true, $this->map->isEmpty());
     }
 
-    /**
-     * Test if the keys method works fine
-     */
     public function testKeys()
     {
-        $std = new \stdClass();
+        $this->assertEquals([], $this->map->keys());
 
-        $hashMap = new LinkedMap();
-        $this->assertEquals([], $hashMap->keys());
+        $this->map->put(1, 1);
+        $this->assertEquals([1], $this->map->keys());
 
-        $hashMap->put(1, 1);
-        $this->assertEquals([1], $hashMap->keys());
+        $this->map->put('abc', 2);
+        $this->assertEquals([1, 'abc'], $this->map->keys());
 
-        $hashMap->put('abc', 2);
-        $this->assertEquals([1, 'abc'], $hashMap->keys());
+        $this->map->put($this->someObject1, 3);
+        $this->assertEquals([1, 'abc', $this->someObject1], $this->map->keys());
 
-        $hashMap->put($std, 3);
-        $this->assertEquals([1, 'abc', $std], $hashMap->keys());
+        $this->map->remove('abc');
+        $this->assertEquals([1, $this->someObject1], $this->map->keys());
 
-        $hashMap->remove('abc');
-        $this->assertEquals([1, $std], $hashMap->keys());
-
-        $hashMap->remove(1);
-        $this->assertEquals([$std], $hashMap->keys());
+        $this->map->remove(1);
+        $this->assertEquals([$this->someObject1], $this->map->keys());
     }
 }
