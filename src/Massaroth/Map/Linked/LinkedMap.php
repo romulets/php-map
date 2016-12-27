@@ -142,10 +142,9 @@ class LinkedMap extends Map
         $item = $this->searchItemByKey($key);
         $previousItem = $this->searchPreviousItem($item);
 
-        if (!is_null($item)) {
-            $this->size--;
-        }
+        if (is_null($item)) return;
 
+        $this->size--;
         $this->checkupMapAndRemoveItem($item, $previousItem);
     }
  
@@ -153,7 +152,7 @@ class LinkedMap extends Map
      * @param LinkedMapItem $itemToRemove
      * @param LinkedMapItem $previousItem
      */
-    private function checkupMapAndRemoveItem(LinkedMapItem $itemToRemove, LinkedMapItem $previousItem) {
+    private function checkupMapAndRemoveItem(LinkedMapItem $itemToRemove, LinkedMapItem $previousItem = null) {
         $nextItem = $itemToRemove->getNext();
 
         if ($this->isEmpty()) {
