@@ -110,8 +110,9 @@ class LinkedMap extends Map
     public function keys()
     {
         $keys = [];
-        foreach ($this as $key => $value)
+        foreach ($this as $key => $value) {
             $keys[] = $key;
+        }
         return $keys;
     }
 
@@ -140,17 +141,38 @@ class LinkedMap extends Map
     {
         $item = $this->searchItemByKey($key);
         $previousItem = $this->searchPreviousItem($item);
-        if (!is_null($item))
-            $this->size--;
 
-        if ($this->isEmpty())
+        if (!is_null($item)) {
+            $this->size--;
+        }
+
+        $this->checkupMapAndRemoveItem($item, $previousItem);
+    }
+ 
+    /**
+     * @param LinkedMapItem $itemToRemove
+     * @param LinkedMapItem $previousItem
+     */
+    private function checkupMapAndRemoveItem(LinkedMapItem $itemToRemove, LinkedMapItem $previousItem) {
+        $nextItem = $itemToRemove->getNext();
+
+        if ($this->isEmpty()) {
             $this->clear();
-        elseif ($item === $this->first)
-            $this->setFirstAndCurrentItemEqually($item->getNext());
-        elseif ($item === $this->last)
+        } elseif ($itemToRemove === $this->first) {
+            $this->setFirstAndCurrentItemEqually($nextItem);
+        } elseif ($itemToRemove === $this->last) {
             $this->setLastItem($previousItem);
-        else
-            $previousItem->setNext($item->getNext());
+        } else {
+            $this->linkItems($previousItem, $nextItem);
+        }
+    }
+
+    /**
+     * @param LinkedMapItem $back
+     * @param LinkedMapItem $front
+     */
+    private function linkItems(LinkedMapItem $back, LinkedMapItem $front) {
+        $back->setNext($front);
     }
 
     /**
@@ -160,8 +182,11 @@ class LinkedMap extends Map
     private function getNewItem($key)
     {
         $item = new LinkedMapItem($key, null);
-        if ($this->isEmpty())
+
+        if ($this->isEmpty()) {
             $this->setFirstAndCurrentItemEqually($item);
+        }
+
         $this->setLastItem($item);
         $this->size++;
         return $item;
@@ -197,8 +222,10 @@ class LinkedMap extends Map
      */
     private function setLastItem(LinkedMapItem $item = null)
     {
-        if (!is_null($this->last))
+        if (!is_null($this->last)) {
             $this->last->setNext($item);
+        }
+
         $this->last = $item;
     }
 
@@ -236,7 +263,7 @@ class LinkedMap extends Map
     }
 
     /**
-     * @param \Closure $searchMethod
+     * @param \Closure $searchMethod Expects bool return
      * @param $search
      * @return LinkedMapItem|null
      */
@@ -247,10 +274,12 @@ class LinkedMap extends Map
         $this->rewind();
         $next = $this->current;
         while ($next) {
+
             if ($searchMethod($next, $search)) {
                 $foundItem = $next;
                 break;
             }
+
             $this->current = $next;
             $next = $this->current ? $this->current->getNext() : null;
         }
